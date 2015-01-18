@@ -1,7 +1,7 @@
-import SocketServer
+import SocketServer, os.path
 # coding: utf-8
 
-# Copyright 2013 Abram Hindle, Eddie Antonio Santos
+# Copyright 2015 Abram Hindle, Eddie Antonio Santos, Chongyang Ye
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,74 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall("OK")
+        #get the request
+        requestList = self.data.split()
+        
+        requestType = requestList[0]
+        requestUrl = requestList[1]
+        if requestType == "GET":
+            self.getRequest(requestUrl)
+       
+
+    
+    def getRequest(self, requestUrl):
+        
+        if "/../" in requestUrl or "/.." in requestUrl:
+            self.pageNotFound()
+            return        
+        
+        dirc="/www"
+        contentType = ""
+        #set index.html as default
+        if requestUrl[-1] =="/":
+            requestUrl = requestUrl +"index.html"
+            contentType = "text/html"
+            if os.path.isfile(os.getcwd()+dirc+requestUrl):
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+                self.sendResponse(contentType, fp,fp2)
+            else:
+                fp = open(os.getcwd()+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/deep.css", "r").read()
+                self.sendResponse(contentType, fp,fp2)
+        #check the file is css or not 
+        elif requestUrl[-3:].lower() == "css":
+            contentType = "text/css"
+            fp2=""
+            if os.path.isfile(os.getcwd()+dirc+requestUrl):
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                self.sendResponse(contentType, fp,fp2)
+            else:
+                fp = open(os.getcwd()+requestUrl,"r").read()
+                self.sendResponse(contentType, fp,fp2)
+        #check the file is html or not         
+        elif requestUrl[-4:].lower() =="html":
+            contentType = "text/html"
+            if os.path.isfile(os.getcwd()+dirc+requestUrl):
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+                self.sendResponse(contentType, fp,fp2)
+            else:
+                fp = open(os.getcwd()+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/deep.css", "r").read()
+                self.sendResponse(contentType, fp, fp2)
+        #if file is not html or css, then it's not a correct file 
+        else:
+            self.pageNotFound()
+        
+            
+        
+    def sendResponse(self, contentType, fp,fp2):    
+        self.request.sendall("HTTP/1.1 200 OK\r\n"+
+                             "Content-Type: "+contentType +"\r\n"+
+                             fp+"<style>"+fp2+"</style>")
+            
+        
+    def pageNotFound(self):
+        self.request.sendall("HTTP/1.1 404 Not Found\r\n" +
+                             "Content-Type: text/html\n"+
+                             "<html><body><h1>404 Page Not Found"+
+                             "</h1></body></html>\n")
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
