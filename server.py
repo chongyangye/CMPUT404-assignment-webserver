@@ -82,6 +82,14 @@ class MyWebServer(SocketServer.BaseRequestHandler):
                 fp = open(os.getcwd()+requestUrl,"r").read()
                 fp2 = open(os.getcwd()+dirc+"/deep.css", "r").read()
                 self.sendResponse(contentType, fp, fp2)
+        #handle the case for /deep, there is no / behind        
+        elif requestUrl[-4:].lower()== "deep":
+            contentType = "text/html"
+            requestUrl = requestUrl +"/index.html"
+            fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+            fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+            self.sendResponse(contentType, fp,fp2)            
+            
         #if file is not html or css, then it's not a correct file 
         else:
             self.pageNotFound()
