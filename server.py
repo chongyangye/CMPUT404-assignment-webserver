@@ -36,8 +36,14 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         
         requestType = requestList[0]
         requestUrl = requestList[1]
-        if requestType == "GET":
+        #check if the request type is get
+        if requestType.upper() == "GET":
             self.getRequest(requestUrl)
+        else:
+            self.request.sendall("HTTP/1.1 501 Not Implemented\r\n" +
+                                         "Content-Type: text/html\n"+
+                                         "<html><body><h1>501 Not Implemented"+
+                                         "</h1></body></html>\n")            
        
 
     
@@ -51,15 +57,18 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         contentType = ""
         #set index.html as default
         if requestUrl[-1] =="/":
-            requestUrl = requestUrl +"index.html"
+            if requestUrl[-5:] =="html/":
+                requestUrl = requestUrl[:-1]
+            else:
+                requestUrl = requestUrl +"index.html"
             contentType = "text/html"
-            if os.path.isfile(os.getcwd()+dirc+requestUrl):
+            if os.path.isfile(os.getcwd()+dirc+requestUrl) and "deep" not in requestUrl.split("/"):
                 fp = open(os.getcwd()+dirc+requestUrl,"r").read()
                 fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
                 self.sendResponse(contentType, fp,fp2)
             else:
-                fp = open(os.getcwd()+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/deep.css", "r").read()
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
                 self.sendResponse(contentType, fp,fp2)
         #check the file is css or not 
         elif requestUrl[-3:].lower() == "css":
@@ -74,20 +83,20 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         #check the file is html or not         
         elif requestUrl[-4:].lower() =="html":
             contentType = "text/html"
-            if os.path.isfile(os.getcwd()+dirc+requestUrl):
+            if os.path.isfile(os.getcwd()+dirc+requestUrl) and "deep" not in requestUrl.split("/"):
                 fp = open(os.getcwd()+dirc+requestUrl,"r").read()
                 fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
                 self.sendResponse(contentType, fp,fp2)
             else:
-                fp = open(os.getcwd()+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/deep.css", "r").read()
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
                 self.sendResponse(contentType, fp, fp2)
         #handle the case for /deep, there is no / behind        
         elif requestUrl[-4:].lower()== "deep":
             contentType = "text/html"
             requestUrl = requestUrl +"/index.html"
             fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-            fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+            fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
             self.sendResponse(contentType, fp,fp2)            
             
         #if file is not html or css, then it's not a correct file 
