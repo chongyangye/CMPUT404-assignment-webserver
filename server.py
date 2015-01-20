@@ -57,48 +57,65 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         contentType = ""
         #set index.html as default
         if requestUrl[-1] =="/":
-            if requestUrl[-5:] =="html/":
-                requestUrl = requestUrl[:-1]
-            else:
-                requestUrl = requestUrl +"index.html"
+            requestUrl = requestUrl +"index.html"
             contentType = "text/html"
             if os.path.isfile(os.getcwd()+dirc+requestUrl) and "deep" not in requestUrl.split("/"):
-                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
-                self.sendResponse(contentType, fp,fp2)
+                try:
+                    fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                    fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+                    self.sendResponse(contentType, fp,fp2)
+                except IOError:
+                    self.pageNotFound()
             else:
-                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
-                self.sendResponse(contentType, fp,fp2)
+                try:
+                    fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                    fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
+                    self.sendResponse(contentType, fp,fp2)
+                except IOError:
+                    self.pageNotFound()
         #check the file is css or not 
         elif requestUrl[-3:].lower() == "css":
             contentType = "text/css"
             fp2=""
             if os.path.isfile(os.getcwd()+dirc+requestUrl):
-                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-                self.sendResponse(contentType, fp,fp2)
+                try:
+                    fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                    self.sendResponse(contentType, fp,fp2)
+                except IOError:
+                    self.pageNotFound()
             else:
-                fp = open(os.getcwd()+requestUrl,"r").read()
-                self.sendResponse(contentType, fp,fp2)
+                try:
+                    fp = open(os.getcwd()+requestUrl,"r").read()
+                    self.sendResponse(contentType, fp,fp2)
+                except IOError:
+                    self.pageNotFound()
         #check the file is html or not         
         elif requestUrl[-4:].lower() =="html":
             contentType = "text/html"
             if os.path.isfile(os.getcwd()+dirc+requestUrl) and "deep" not in requestUrl.split("/"):
-                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
-                self.sendResponse(contentType, fp,fp2)
+                try:
+                    fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                    fp2 = open(os.getcwd()+dirc+"/base.css", "r").read()
+                    self.sendResponse(contentType, fp,fp2)
+                except IOError:
+                    self.pageNotFound()
             else:
-                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-                fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
-                self.sendResponse(contentType, fp, fp2)
+                try:
+                    fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                    fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
+                    self.sendResponse(contentType, fp, fp2)
+                except IOError:
+                    self.pageNotFound()
         #handle the case for /deep, there is no / behind        
         elif requestUrl[-4:].lower()== "deep":
             contentType = "text/html"
             requestUrl = requestUrl +"/index.html"
-            fp = open(os.getcwd()+dirc+requestUrl,"r").read()
-            fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
-            self.sendResponse(contentType, fp,fp2)            
-            
+            try:
+                fp = open(os.getcwd()+dirc+requestUrl,"r").read()
+                fp2 = open(os.getcwd()+dirc+"/deep"+"/deep.css", "r").read()
+                self.sendResponse(contentType, fp,fp2)                 
+            except IOError:
+                self.pageNotFound()
         #if file is not html or css, then it's not a correct file 
         else:
             self.pageNotFound()
