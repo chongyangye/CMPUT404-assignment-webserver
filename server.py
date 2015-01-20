@@ -130,9 +130,9 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         
     def pageNotFound(self):
         self.request.sendall("HTTP/1.1 404 Not Found\r\n" +
-                             "Content-Type: text/html\n"+
-                             "<html><body><h1>404 Page Not Found"+
-                             "</h1></body></html>\n")
+                             "Content-Type:\n")
+        self.request.sendall("\r\n")
+        self.request.sendall("<html><body>Error 404, Page Not Found</body></html>")
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
